@@ -8,18 +8,47 @@
 import SwiftData
 import Foundation
 
-// Example model
 @Model
 public final class TimeEntry {
-    public var name: String
+    public var name: String = "Untitled TimeEntry"
     public var createdAt: Date
+    
+    public var duration: Int64 = 0
+    public var isRunning: Bool = false
+    public var startDate: Date? = Date.now
+    public var endDate: Date? = nil
+
+    public var subentries: [TimeEntry] = [TimeEntry]()
+    public var parent: TimeEntry?
+    
+    public var hasRunningTimers: Bool {
+        return subentries.contains { $0.isRunning }
+    }
     
     public init(name: String, createdAt: Date = .now) {
         self.name = name
         self.createdAt = createdAt
     }
-}
+   
+    public init(name: String, duration: Int64, startDate: Date, endDate: Date? = nil, parent: TimeEntry? = nil, isRunning: Bool, createdAt: Date = .now) {
+        self.name = name
+        self.duration = duration
+        self.startDate = startDate
+        self.endDate = endDate
+        self.isRunning = isRunning
+        self.parent = parent
+        self.createdAt = createdAt
+    }
 
+    public func calculatedDuration() -> Int64 {
+        return Int64(endDate?.timeIntervalSince(startDate!) ?? 0)
+    }
+
+    public func copy(with zone: NSZone? = nil) -> Any {
+        let copy = TimeEntry(name: name, duration: duration, startDate:startDate ?? Date.now, endDate: endDate ?? Date.now, isRunning: isRunning)
+        return copy
+    }
+}
 
 public struct DatabaseManager {
     public init() {}
@@ -28,7 +57,6 @@ public struct DatabaseManager {
     public func setupContainer() -> ModelContainer {
         let schema = Schema([
             TimeEntry.self,
-            // Add other model types here
         ])
         
         let modelConfiguration = ModelConfiguration(schema: schema)
