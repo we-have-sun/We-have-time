@@ -67,4 +67,22 @@ public struct DatabaseManager {
             fatalError("Could not create ModelContainer: \(error)")
         }
     }
+    
+    public static func createProject(name: String = "", modelContext: ModelContext) throws -> TimeEntry {
+        let project = TimeEntry(name: name, createdAt: .now)
+        modelContext.insert(project)
+        try modelContext.save()
+        return project
+    }
+    
+    public static func deleteAllProjects(modelContext: ModelContext) -> Bool {
+        do {
+            try modelContext.delete(model: TimeEntry.self)
+            try modelContext.save()
+            return true
+        } catch {
+            print("Failed to clear TimeEntry records: \(error)")
+            return false
+        }
+    }
 }
